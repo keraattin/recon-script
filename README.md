@@ -21,8 +21,20 @@ results/
     ├── assetfinder.txt
     ├── subdomains.txt
     ├── resolved.txt
-    ├── httpx.json         <-- HTTP metadata
-    ├── alive.txt          <-- Aktive services URL's
-    ├── nmap_<ip>.xml      <-- Nmap port scan results
+    ├── httpx.json           <-- HTTP metadata
+    ├── alive.txt            <-- Aktive services URL's
+    ├── nmap_<ip>.xml        <-- Nmap port scan results
+    ├── fuzzing_results.txt  <-- Gobuster fuzzing results
 results/summary.txt       <-- Summary
+```
+
+## Required Programs
+```
+- subfinder
+- assetfinder
+- dnsx
+- httpx
+- nmap
+- gobuster
+- gospider
 ```
