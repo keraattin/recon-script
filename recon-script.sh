@@ -60,14 +60,27 @@ for domain in "${domains[@]}"; do
     # DNSx
     dnsx -silent -l "$DOMAIN_DIR/subdomains.txt" -o "$DOMAIN_DIR/resolved.txt" > /dev/null 2>&1
 
+    # HTTPX metadata
+    if [[ -s "$DOMAIN_DIR/resolved.txt" ]]; then
+        httpx -l "$DOMAIN_DIR/resolved.txt" \
+              -status-code -title -tech-detect -web-server -ip -cname -tls-probe -cdn \
+              -json -silent > "$DOMAIN_DIR/httpx.json" 2>/dev/null
+
+        jq -r '.url' "$DOMAIN_DIR/httpx.json" > "$DOMAIN_DIR/alive.txt"
+    else
+        touch "$DOMAIN_DIR/httpx.json"
+        touch "$DOMAIN_DIR/alive.txt"
+    fi
+
     # Count
     TOTAL=$(wc -l < "$DOMAIN_DIR/subdomains.txt" | tr -d ' ')
     RESOLVED=$(wc -l < "$DOMAIN_DIR/resolved.txt" | tr -d ' ')
+    ALIVE=$(wc -l < "$DOMAIN_DIR/alive.txt" | tr -d ' ')
 
-    echo "  [*] Total Subdomains: $TOTAL | Resolved: $RESOLVED"
+    echo "  [*] Total Subdomains: $TOTAL | Resolved: $RESOLVED | Alive: $ALIVE"
 
     {
-        echo "$domain - Total Subdomains: $TOTAL - Resolved: $RESOLVED"
+        echo "$domain - Total: $TOTAL - Resolved: $RESOLVED - Alive: $ALIVE"
         echo "----------------------------------------"
     } >> "$SUMMARY_FILE"
 done
