@@ -48,19 +48,24 @@ for domain in "${domains[@]}"; do
     mkdir -p "$DOMAIN_DIR"
 
     # Subfinder
+    echo "  [-] Running Subfinder..."
     subfinder -d "$domain" -silent > "$DOMAIN_DIR/subfinder.txt" 2>/dev/null
 
     # Assetfinder
+    echo "  [-] Running Assetfinder..."
     assetfinder --subs-only "$domain" > "$DOMAIN_DIR/assetfinder.txt" 2>/dev/null
 
     # Merge
+    echo "  [-] Merging and deduplicating subdomains..."
     cat "$DOMAIN_DIR/subfinder.txt" "$DOMAIN_DIR/assetfinder.txt" 2>/dev/null \
         | sed 's/^ *//;s/ *$//' | tr '[:upper:]' '[:lower:]' | sort -u > "$DOMAIN_DIR/subdomains.txt"
 
     # DNSx
+    echo "  [-] Resolving subdomains with dnsx..."
     dnsx -silent -l "$DOMAIN_DIR/subdomains.txt" -o "$DOMAIN_DIR/resolved.txt" > /dev/null 2>&1
 
     # HTTPX metadata
+    echo "  [-] Geting metadata with HTTPX"
     if [[ -s "$DOMAIN_DIR/resolved.txt" ]]; then
         httpx -l "$DOMAIN_DIR/resolved.txt" \
               -status-code -title -tech-detect -web-server -ip -cname -tls-probe -cdn \
@@ -70,6 +75,15 @@ for domain in "${domains[@]}"; do
     else
         touch "$DOMAIN_DIR/httpx.json"
         touch "$DOMAIN_DIR/alive.txt"
+    fi
+
+    # Port scan with Nmap
+    echo "  [-] Running NMAP Scripts"
+    echo -e "${YELLOW}  [+] Running Nmap scan on resolved domains for: $domain${RESET}"
+    if [[ -s "$DOMAIN_DIR/resolved.txt" ]]; then
+        while IFS= read -r ip; do
+            nmap -sS -p- -sV "$ip" --open -T4 -oX "$DOMAIN_DIR/nmap_$ip.xml" 2>/dev/null
+        done < "$DOMAIN_DIR/resolved.txt"
     fi
 
     # Count
