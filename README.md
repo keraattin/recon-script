@@ -25,6 +25,8 @@ results/
     ├── alive.txt            <-- Aktive services URL's
     ├── nmap_<ip>.xml        <-- Nmap port scan results
     ├── fuzzing_results.txt  <-- Gobuster fuzzing results
+    ├── crawling_results.txt  <-- Gospider crawling results
+    ├── found_urls.txt      <-- Combinerd fuzzing&crwaling results
 results/summary.txt       <-- Summary
 ```
 
