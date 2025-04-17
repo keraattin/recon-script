@@ -87,18 +87,32 @@ for domain in "${domains[@]}"; do
     fi
 
     # Fuzzing: Gobuster to find hidden URLs
-    echo -e "${GREEN}[+] Running Gobuster fuzzing for: $domain${RESET}"
-    gobuster dir -u "http://$domain" -w /usr/share/wordlists/dirb/big.txt -t 50 -o "$DOMAIN_DIR/fuzzing_results.txt" 2>/dev/null
+    echo -e "${GREEN} [+] Running Gobuster fuzzing for: $domain${RESET}"
+    gobuster dir -u "http://$domain" -w /usr/share/wordlists/dirb/big.txt -t 50 -b 301,404,400,500 -o "$DOMAIN_DIR/fuzzing_results.txt"
+
+    # Crawling
+    echo -e "${GREEN} [+] Running Gospider crawler for: $domain${RESET}"
+    gospider -s "http://$domain" -t 10 -c 5 -d 2 --robots > "$DOMAIN_DIR/crawling_results.txt" 
+
+    # Combine & dedupe fuzzing and crawling results
+    grep -oP 'http[s]?://[^ ]+' "$DOMAIN_DIR/crawling_results.txt" 2>/dev/null >> "$DOMAIN_DIR/found_urls.txt"
+    tail -n +2 "$DOMAIN_DIR/fuzzing_results.txt" | cut -d',' -f1 >> "$DOMAIN_DIR/found_urls.txt" 2>/dev/null
+    sort -u "$DOMAIN_DIR/found_urls.txt" -o "$DOMAIN_DIR/found_urls.txt"
 
     # Count
     TOTAL=$(wc -l < "$DOMAIN_DIR/subdomains.txt" | tr -d ' ')
     RESOLVED=$(wc -l < "$DOMAIN_DIR/resolved.txt" | tr -d ' ')
     ALIVE=$(wc -l < "$DOMAIN_DIR/alive.txt" | tr -d ' ')
+    FOUND_URL_COUNT=$(wc -l < "$DOMAIN_DIR/found_urls.txt" | tr -d ' ')
 
     echo "  [*] Total Subdomains: $TOTAL | Resolved: $RESOLVED | Alive: $ALIVE"
 
     {
-        echo "$domain - Total: $TOTAL - Resolved: $RESOLVED - Alive: $ALIVE"
+        echo "----------------------------------------"
+        echo "$domain"
+        echo "----------------------------------------"
+        echo "Subdomain - Total: $TOTAL - Resolved: $RESOLVED - Alive: $ALIVE"
+        echo "Found Urls: $FOUND_URL_COUNT"
         echo "----------------------------------------"
     } >> "$SUMMARY_FILE"
 done
