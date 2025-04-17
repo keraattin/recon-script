@@ -13,3 +13,16 @@ example.com
 testsite.org
 corpdomain.net
 ```
+## Result Tree
+```
+results/
+└── example.com/
+    ├── subfinder.txt
+    ├── assetfinder.txt
+    ├── subdomains.txt
+    ├── resolved.txt
+    ├── httpx.json         <-- HTTP metadata
+    ├── alive.txt          <-- Aktive services URL's
+    ├── nmap_<ip>.xml      <-- Nmap port scan results
+results/summary.txt       <-- Summary
+```
