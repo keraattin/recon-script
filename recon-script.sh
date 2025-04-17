@@ -86,6 +86,10 @@ for domain in "${domains[@]}"; do
         done < "$DOMAIN_DIR/resolved.txt"
     fi
 
+    # Fuzzing: Gobuster to find hidden URLs
+    echo -e "${GREEN}[+] Running Gobuster fuzzing for: $domain${RESET}"
+    gobuster dir -u "http://$domain" -w /usr/share/wordlists/dirb/big.txt -t 50 -o "$DOMAIN_DIR/fuzzing_results.txt" 2>/dev/null
+
     # Count
     TOTAL=$(wc -l < "$DOMAIN_DIR/subdomains.txt" | tr -d ' ')
     RESOLVED=$(wc -l < "$DOMAIN_DIR/resolved.txt" | tr -d ' ')
